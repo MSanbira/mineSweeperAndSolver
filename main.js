@@ -1,5 +1,5 @@
-const boardSize = 30;
-const minesNum = 150;
+const boardSize = 20;
+const minesNum = 80;
 const cellsToBeClicked = boardSize * boardSize - minesNum;
 const gameGrid = {};
 const gridDom = document.querySelector(".gameGrid");
@@ -45,13 +45,14 @@ const resetGame = () => {
 };
 
 const setMockGrid = () => {
-    gridDom.innerHTML = "";
+    let cellDoms = '';
 
     for (let i = 0; i < boardSize; i++) {
         for (let j = 0; j < boardSize; j++) {
-            gridDom.innerHTML += `<div data-coordinates="${i},${j}"></div>`;
+            cellDoms += `<div data-coordinates="${i},${j}"></div>`;
         }
     }
+    gridDom.innerHTML = cellDoms;
 };
 
 const initialGame = (cordsNotMine) => {
