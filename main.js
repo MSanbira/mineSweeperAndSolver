@@ -18,8 +18,12 @@ gridDom.addEventListener("click", (e) => {
         }
         if (coordinates) {
             const [i, j] = coordinates.split(",");
-            const checkedZeroCords = [];
-            handleClickedTile(i, j, checkedZeroCords);
+            if (e.buttons === 3) {
+                openNonFlagged(i, j);
+            } else {
+                const checkedZeroCords = [];
+                handleClickedTile(i, j, checkedZeroCords);
+            }
             checkIsWon();
         }
     }
@@ -30,7 +34,12 @@ gridDom.addEventListener("contextmenu", (e) => {
         if (coordinates) {
             e.preventDefault();
             const [i, j] = coordinates.split(",");
-            toggleCellIsFlagged(i, j);
+            if (e.buttons === 3) {
+                openNonFlagged(i, j);
+                checkIsWon();
+            } else {
+                toggleCellIsFlagged(i, j);
+            }
         }
     }
 });
@@ -45,7 +54,7 @@ const resetGame = () => {
 };
 
 const setMockGrid = () => {
-    let cellDoms = '';
+    let cellDoms = "";
 
     for (let i = 0; i < boardSize; i++) {
         for (let j = 0; j < boardSize; j++) {
@@ -61,7 +70,6 @@ const initialGame = (cordsNotMine) => {
 
     setMines(minesSoFar, mineChance, cordsNotMine);
     setNumbers();
-
 };
 
 const setMines = (minesSoFar, mineChance, cordsNotMine) => {
@@ -157,6 +165,25 @@ const checkShouldOpen = (cords) => {
     return;
 };
 
+const openNonFlagged = (i, j) => {
+    const touchedKeys = getTouchedKeys(i, j);
+    const flaggedCount = touchedKeys.filter(
+        (c) => gameGrid[c]?.isFlagged
+    ).length;
+    if (flaggedCount === getCellValue(i, j)) {
+        touchedKeys.forEach((c) => {
+            if (gameGrid[c] && !gameGrid[c].isFlagged) {
+                const checkedZeroCords = [];
+                handleClickedTile(
+                    c.split(",")[0],
+                    c.split(",")[1],
+                    checkedZeroCords
+                );
+            }
+        });
+    }
+};
+
 const checkIsWon = () => {
     isWon =
         document.querySelectorAll(".gameGrid > div.clicked").length ===
@@ -173,8 +200,8 @@ const gameOver = () => {
         .forEach((c) => {
             gameGrid[c].isClicked = true;
             const cellDom = document.querySelector(`[data-coordinates="${c}"`);
-            cellDom.classList.add('boom');
-            cellDom.innerText = '🧨';
+            cellDom.classList.add("boom");
+            cellDom.innerText = "🧨";
         });
 
     gameStatusBtn.innerHTML = "GAME OVER";
@@ -195,7 +222,7 @@ const getCellIsClicked = (i, j) => {
 const setCellIsClicked = (i, j, cellValue) => {
     gameGrid[`${i},${j}`].isClicked = true;
     const cellDom = document.querySelector(`[data-coordinates="${i},${j}"`);
-    cellDom.classList.add('clicked');
+    cellDom.classList.add("clicked");
     cellDom.innerText = cellValue;
 };
 
@@ -204,9 +231,11 @@ const getCellIsFlagged = (i, j) => {
 };
 
 const toggleCellIsFlagged = (i, j) => {
-    gameGrid[`${i},${j}`].isFlagged = !gameGrid[`${i},${j}`].isFlagged;
-    const cellDom = document.querySelector(`[data-coordinates="${i},${j}"`);
-    cellDom.classList.toggle('flagged');
+    if (!getCellIsClicked(i, j)) {
+        gameGrid[`${i},${j}`].isFlagged = !gameGrid[`${i},${j}`].isFlagged;
+        const cellDom = document.querySelector(`[data-coordinates="${i},${j}"`);
+        cellDom.classList.toggle("flagged");
+    }
 };
 
 setMockGrid();
